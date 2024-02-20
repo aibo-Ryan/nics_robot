@@ -1,0 +1,56 @@
+<launch>
+    <arg name="robot_name" value="AKM_1"/>
+    <arg name="ai1_name" value="AI_1"/>
+    <arg name="ai2_name" value="AI_2"/>
+    <arg name="world_name" value="$(find nics_bringup)/worlds/nics_scene_new/nics_world.world"/>
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+    <arg name="x_pos" default="4.4"/>
+    <arg name="y_pos" default="-2.6"/>
+    <arg name="z_pos" default="0.5"/>
+    <arg name="yaw_pos" default="0"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)" />
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="gui" value="$(arg gui)" />
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+    <group ns="$(arg robot_name)">
+    <include file="$(find akm_description)/launch/nics_akm.launch" >
+        <arg name="robot_name" value="$(arg robot_name)"/>
+        <arg name="x_pos" value="$(arg x_pos)"/>
+        <arg name="y_pos" value="$(arg y_pos)"/>
+        <arg name="z_pos" value="$(arg z_pos)"/>
+        <arg name="yaw_pos" value="$(arg yaw_pos)"/>
+    </include>
+    </group>
+
+    <group ns="$(arg ai1_name)">
+    <include file="$(find akm_description)/launch/nics_akm_actor.launch" >
+        <arg name="robot_name" value="$(arg ai1_name)"/>
+        <arg name="x_pos" value="-0.3"/>
+        <arg name="y_pos" value="4"/>
+        <arg name="z_pos" value="0.2"/>
+        <arg name="yaw_pos" value="0"/>
+    </include>
+    </group>
+
+    <include file="$(find akm_control)/launch/include/rotnav_new.launch">
+        <arg name="robot_name" value="$(arg ai1_name)"/>
+        <param name="pointy" type="float" value="4"/>
+    </include>
+
+    <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find nics_bringup)/rviz/akm.rviz">
+        <remap from="/move_base_simple/goal" to="/$(arg robot_name)/move_base_simple/goal"/>
+        <remap from="/initialpose" to="/$(arg robot_name)/initialpose"/>
+        <remap from="/clicked_point" to="/$(arg robot_name)/clicked_point"/>
+    </node>
+
+</launch>
